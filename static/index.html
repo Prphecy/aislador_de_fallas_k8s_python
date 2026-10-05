@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sistema Experto K8s — Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 font-size=%2290%22><text y=%22.9em%22>🩺</text></svg>" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">🩺</span>
+      <div>
+        <h1>Sistema Experto K8s</h1>
+        <p class="subtitle">Diagnóstico de Pods en vivo</p>
+      </div>
+    </div>
+    <div class="status-pill" id="statusPill" data-state="offline" role="status" aria-live="polite">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="statusText">Desconectado</span>
+    </div>
+  </header>
+
+  <form class="controls" id="controlsForm" autocomplete="off">
+    <div class="field">
+      <label for="namespaceInput">Namespace</label>
+      <input id="namespaceInput" name="namespace" list="namespaceList" value="default" />
+      <datalist id="namespaceList"></datalist>
+    </div>
+    <div class="field field-grow">
+      <label for="podInput">Pod</label>
+      <input id="podInput" name="pod" list="podList" value="oom-demo" placeholder="nombre-del-pod" required />
+      <datalist id="podList"></datalist>
+    </div>
+    <div class="field">
+      <label for="contextInput">Contexto <span class="field-hint">(opcional)</span></label>
+      <input id="contextInput" name="context" placeholder="minikube" />
+    </div>
+    <div class="field-actions">
+      <button type="button" id="refreshBtn" class="btn-ghost" title="Actualizar lista de namespaces y pods">↻</button>
+      <button type="submit" id="connectBtn" class="btn-primary">Conectar</button>
+    </div>
+  </form>
+
+  <main>
+    <section class="hero" id="hero" data-severity="" aria-live="polite">
+      <div class="hero-empty" id="heroEmpty">
+        <p>Elige un namespace y un Pod, luego pulsa <strong>Conectar</strong> para empezar el diagnóstico en vivo.</p>
+      </div>
+      <div class="hero-content" id="heroContent" hidden>
+        <span class="hero-icon" id="heroIcon" aria-hidden="true"></span>
+        <div class="hero-text">
+          <span class="hero-severity" id="heroSeverity"></span>
+          <h2 class="hero-pod" id="heroPod"></h2>
+          <p class="hero-meta" id="heroMeta"></p>
+        </div>
+        <div class="hero-clock">
+          <span class="hero-clock-label">Última lectura</span>
+          <span class="hero-clock-value" id="heroClock">—</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="banner" id="banner" hidden></div>
+
+    <div class="grid">
+      <section class="col-main">
+        <div id="findings" class="findings"></div>
+
+        <div class="panel" id="inferencePanel" hidden>
+          <h2><span class="panel-accent" aria-hidden="true"></span>Cadena de inferencia</h2>
+          <p class="panel-note">Hechos observados → síntomas detectados → diagnóstico concluido, en el orden en que disparó el motor de reglas.</p>
+          <ul class="inference-tree" id="inferenceTree"></ul>
+        </div>
+      </section>
+
+      <aside class="col-side">
+        <div class="panel" id="podInfoPanel" hidden>
+          <h2><span class="panel-accent" aria-hidden="true"></span>Pod</h2>
+          <dl class="meta-grid" id="podInfoGrid"></dl>
+        </div>
+
+        <div class="panel" id="containersPanel" hidden>
+          <h2><span class="panel-accent" aria-hidden="true"></span>Contenedores</h2>
+          <div class="table-wrap">
+            <table id="containersTable">
+              <thead>
+                <tr>
+                  <th>Nombre</th><th>Estado</th><th>Motivo</th><th>Reinicios</th><th>Ready</th><th>Mem. límite</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel" id="eventsPanel" hidden>
+          <h2><span class="panel-accent" aria-hidden="true"></span>Eventos recientes</h2>
+          <div class="table-wrap">
+            <table id="eventsTable">
+              <thead><tr><th>Tipo</th><th>Motivo</th><th>Mensaje</th><th>×</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel" id="timelinePanel" hidden>
+          <h2><span class="panel-accent" aria-hidden="true"></span>Historial en vivo</h2>
+          <ul class="timeline" id="timelineList"></ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p>Sistema Experto K8s · colector (kubernetes) + motor de reglas (experta), servidos vía FastAPI.</p>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

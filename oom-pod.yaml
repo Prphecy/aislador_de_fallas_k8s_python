@@ -1,0 +1,45 @@
+# oom-pod.yaml — Pod que FALLA A PROPÓSITO por consumo excesivo de memoria (OOMKilled)
+#
+# Mecanismo:
+#   `stress` intenta reservar y tocar 250 MiB de RAM, pero el contenedor tiene un
+#   límite de 100 MiB. El OOM killer del kernel (cgroup) lo mata con SIGKILL
+#   (exit code 137) y el kubelet lo reinicia => CrashLoopBackOff con backoff
+#   creciente (10s, 20s, 40s ... hasta 5 min).
+#
+# Uso:
+#   kubectl apply -f oom-pod.yaml
+#   kubectl get pod oom-demo -w        # Running -> OOMKilled -> CrashLoopBackOff
+#   python k8s_expert.py oom-demo      # diagnóstico del sistema experto
+#   kubectl delete -f oom-pod.yaml     # limpieza
+#
+# Para "arreglarlo" y ver al sistema experto reportar un Pod sano:
+#   sube limits.memory a 300Mi, y luego: kubectl delete pod oom-demo && kubectl apply -f oom-pod.yaml
+#   (los recursos de un Pod suelto son inmutables, por eso hay que recrearlo)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: oom-demo
+  namespace: default
+  labels:
+    app: oom-demo
+    purpose: expert-system-demo
+spec:
+  restartPolicy: Always            # (por defecto) el kubelet reinicia el contenedor tras cada OOMKill
+  containers:
+    - name: memory-hog
+      image: polinux/stress        # la misma imagen que usa la doc oficial de K8s en sus demos de memoria
+      command: ["stress"]
+      args:
+        - "--vm"                   # 1 worker de memoria
+        - "1"
+        - "--vm-bytes"             # cada worker reserva 250 MiB  (> límite de 100 MiB)
+        - "250M"
+        - "--vm-hang"              # retiene la memoria 1 s antes de liberarla
+        - "1"
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "100Mi"          # <- límite deliberadamente bajo: provoca el OOMKilled
+          cpu: "200m"

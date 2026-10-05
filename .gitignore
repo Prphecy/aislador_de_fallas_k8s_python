@@ -1,0 +1,27 @@
+# Bytecode y cachés de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+.env
+
+# Variables de entorno / secretos (por si algún día guardas tokens aquí)
+.env.local
+*.env
+
+# Kubeconfig (por si lo copias a la carpeta del proyecto; nunca debe subirse)
+kubeconfig
+*.kubeconfig
+
+# Editor / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
